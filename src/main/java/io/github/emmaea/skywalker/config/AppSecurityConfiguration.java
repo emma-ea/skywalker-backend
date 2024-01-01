@@ -41,7 +41,9 @@ public class AppSecurityConfiguration {
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
         return httpSecurity.csrf(AbstractHttpConfigurer::disable)
                 .headers(HeadersConfigurer::disable)
-                .authorizeHttpRequests(req -> req.anyRequest().permitAll())
+                .authorizeHttpRequests(req -> req.requestMatchers("/h2/**").permitAll())
+                .authorizeHttpRequests(req -> req.requestMatchers("/api/v1/skywalker/auth/**").permitAll())
+                .authorizeHttpRequests(req -> req.anyRequest().authenticated())
                 .authenticationProvider(authenticationProvider())
                 .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)

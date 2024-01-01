@@ -3,6 +3,8 @@ package io.github.emmaea.skywalker.service;
 import io.github.emmaea.skywalker.model.UserRole;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.io.Decoders;
+import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -16,8 +18,8 @@ import java.util.function.Function;
 @Service
 public class JwtService {
 
-    @Value("${token.signingKey}")
-    private String signingKey;
+//    @Value("${token.signingKey}")
+//    private String signingKey;
 
     @Value("${token.expirationTime}")
     private long expirationInMillis;
@@ -73,7 +75,7 @@ public class JwtService {
 
     private Key getSigningKey() {
         return Jwts.SIG.HS256.key().build();
-        // byte[] keyBytes = Base64.getDecoder().decode(signingKey);
+        // byte[] keyBytes = Decoders.BASE64.decode(signingKey);
         // return Keys.hmacShaKeyFor(keyBytes);
     }
 
