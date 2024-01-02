@@ -1,7 +1,6 @@
 package io.github.emmaea.skywalker.config;
 
 import io.github.emmaea.skywalker.service.UserService;
-import lombok.AllArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
