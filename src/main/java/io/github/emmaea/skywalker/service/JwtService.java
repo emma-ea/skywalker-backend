@@ -2,15 +2,19 @@ package io.github.emmaea.skywalker.service;
 
 import io.github.emmaea.skywalker.model.UserRole;
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
+import io.jsonwebtoken.io.Encoders;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
+import javax.crypto.SecretKey;
 import java.security.Key;
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.function.Function;
@@ -18,8 +22,8 @@ import java.util.function.Function;
 @Service
 public class JwtService {
 
-//    @Value("${token.signingKey}")
-//    private String signingKey;
+    @Value("${token.signingKey}")
+    private String signingKey;
 
     @Value("${token.expirationTime}")
     private long expirationInMillis;
@@ -55,17 +59,26 @@ public class JwtService {
     }
 
     private Claims extractAllClaims(String token) {
-        return Jwts.parser().build().parseSignedClaims(token).getPayload();
+        try {
+            return Jwts.parser()
+                    .verifyWith(getSigningKey())
+                    .build()
+                    .parseSignedClaims(token)
+                    .getPayload();
+        } catch (JwtException je) {
+            System.out.println(je.getMessage());
+            return null;
+        }
     }
 
     private String generateToken(HashMap<String, Object> claims, UserDetails userDetails) {
         return Jwts.builder()
+                .signWith(getSigningKey())
                 .claims(claims)
                 .subject(userDetails.getUsername())
                 .issuer(issuer)
                 .issuedAt(new Date(System.currentTimeMillis()))
                 .expiration(new Date(System.currentTimeMillis() + expirationInMillis))
-                .signWith(getSigningKey())
                 .compact();
     }
 
@@ -73,10 +86,9 @@ public class JwtService {
         return extractClaims(token, Claims::getExpiration);
     }
 
-    private Key getSigningKey() {
-        return Jwts.SIG.HS256.key().build();
-        // byte[] keyBytes = Decoders.BASE64.decode(signingKey);
-        // return Keys.hmacShaKeyFor(keyBytes);
+    private SecretKey getSigningKey() {
+        byte[] keyBytes = Decoders.BASE64.decode(signingKey);
+        return Keys.hmacShaKeyFor(signingKey.getBytes());
     }
 
 }
