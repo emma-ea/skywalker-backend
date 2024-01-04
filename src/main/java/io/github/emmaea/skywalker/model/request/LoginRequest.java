@@ -10,5 +10,5 @@ import lombok.*;
 public class LoginRequest {
     private String password;
     private String email;
-    // TODO: Optional login with phone number
+    private String phone;
 }

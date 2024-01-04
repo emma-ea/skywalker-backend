@@ -34,8 +34,7 @@ public class UserService {
             UserRepository userRepository,
             PasswordEncoder passwordEncoder,
             @Lazy AuthenticationManager authenticationManager,
-            JwtService jwtService
-    ) {
+            JwtService jwtService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.authenticationManager = authenticationManager;
@@ -43,12 +42,23 @@ public class UserService {
     }
 
     public ApiResponse<UserResponse> login(LoginRequest login) {
+        // default to authenticate with phone if available
+        // if available retrieve a user acc using phone number
+        // get email from available
+        // else throw exception
+        String userEmail;
+
+        if (login.getPhone() != null && !login.getPhone().isBlank()) {
+            // String[] userPhoneWithCountryCode = login.getPhone().
+            // Optional<User> foundUser = userRepository.findByCountryCodeAndPhone(userEmail, userEmail);
+            // return loginWithPhone(login);
+        }
+
         authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(login.getEmail(), login.getPassword())
-        );
+                new UsernamePasswordAuthenticationToken(login.getEmail(), login.getPassword()));
         Optional<User> user = userRepository.findByEmail(login.getEmail());
         if (user.isEmpty()) {
-           return new ApiResponse<>("LOGIN FAILED", "INVALID EMAIL OR PASSWORD", null, null);
+            return new ApiResponse<>("LOGIN FAILED", "INVALID EMAIL OR PASSWORD", null, null);
         }
         String token = jwtService.generateToken(user.get());
         UserResponse dto = UserResponse.withToken(user.get(), token);
@@ -61,7 +71,8 @@ public class UserService {
         logger.log(Level.INFO, newUser.toString());
 
         Optional<User> foundUserWithEmail = userRepository.findByEmail(newUser.getEmail());
-        Optional<User> foundUserWithPhone = userRepository.findByCountryCodeAndPhone(newUser.getCountryCode(), newUser.getPhone());
+        Optional<User> foundUserWithPhone = userRepository.findByCountryCodeAndPhone(newUser.getCountryCode(),
+                newUser.getPhone());
         if (foundUserWithEmail.isPresent()) {
             // use exception classes
             return new ApiResponse<>("SIGNUP FAILED", "USER WITH EMAIL EXISTS", null, null);
